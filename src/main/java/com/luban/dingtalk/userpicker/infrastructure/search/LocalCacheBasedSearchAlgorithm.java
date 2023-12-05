@@ -141,11 +141,19 @@ public class LocalCacheBasedSearchAlgorithm implements SearchAlgorithm {
             return;
         }
         nodes.forEach(node -> {
-            if (!node.isUserNode() && node.hasChildren()) {
+            if (!node.isUserNode()) {
                 buildLocalCache(node.getChildren());
             } else {
                 final DingTalkPickerNodeSource source = node.getSource();
                 final List<DingTalkPickerNode> pinyinNodes = buildPinyinNodes(node);
+                modelsWithPinyin.compute(source, (k, v) -> {
+                    if (Objects.isNull(v)) {
+                        return Lists.newArrayList(pinyinNodes);
+                    } else {
+                        v.addAll(pinyinNodes);
+                        return v;
+                    }
+                });
                 buildPinyinMapping(source, pinyinNodes);
             }
         });
