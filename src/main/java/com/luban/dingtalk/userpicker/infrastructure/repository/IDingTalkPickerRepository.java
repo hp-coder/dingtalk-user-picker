@@ -13,7 +13,7 @@ import java.util.Optional;
  */
 public interface IDingTalkPickerRepository {
 
-    void refresh();
+    void refresh(boolean forceRefresh);
 
     List<DingTalkPickerNode> findAll(@Nullable DingTalkPickerNodeSource source);
 

@@ -29,7 +29,7 @@ public class DingTalkPickerCommandApplicationServiceImpl implements IDingTalkPic
             final Long expire = stringRedisTemplate.getExpire(REFRESH_LOCK, TimeUnit.SECONDS);
             return DingTalkPickerRefreshResponse.failed(String.format("%s秒后可再次刷新", expire));
         }
-        dingTalkPickerRepository.refresh();
+        dingTalkPickerRepository.refresh(true);
         stringRedisTemplate.opsForValue().set(REFRESH_LOCK, "LOCK", 1, TimeUnit.HOURS);
         return DingTalkPickerRefreshResponse.refreshed();
     }

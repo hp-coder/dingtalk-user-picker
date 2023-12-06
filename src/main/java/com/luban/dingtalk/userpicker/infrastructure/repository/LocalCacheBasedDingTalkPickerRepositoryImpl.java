@@ -54,14 +54,22 @@ public class LocalCacheBasedDingTalkPickerRepositoryImpl implements IDingTalkPic
     @Async
     @EventListener(ApplicationReadyEvent.class)
     @Override
-    public void refresh() {
+    public void refresh(boolean forceRefresh) {
         final List<DingTalkPickerNode> nodes = Stream.of(DingTalkPickerNodeSource.values())
                 .map(source -> {
-                    final DingTalkPickerNode root = datasourceSet.stream()
+                    Optional<DingTalkPickerNode> cachedNode = Optional.empty();
+                    if (!forceRefresh){
+                        cachedNode = caches.stream()
+                                .filter(cache -> cache.support(source))
+                                .filter(cache -> cache.exist(source))
+                                .findFirst()
+                                .flatMap(cache -> cache.findAll(source));
+                    }
+                    final DingTalkPickerNode root = cachedNode.orElseGet(() -> datasourceSet.stream()
                             .filter(datasource -> datasource.support(source))
                             .findFirst()
                             .map(IDingTalkPickerDatasource::tree)
-                            .orElse(null);
+                            .orElse(null));
                     if (Objects.isNull(root)) {
                         return null;
                     }
