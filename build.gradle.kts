@@ -5,15 +5,15 @@ plugins {
     id("io.spring.dependency-management") version "1.1.4"
 }
 
-group = "com.luban"
-version = "1.0.0-sp2-SNAPSHOT"
+group = "com.hp"
+version = "1.0.0-sp3.2-SNAPSHOT"
 var artifactId = "dingtalk-user-picker"
 
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
@@ -87,7 +87,7 @@ dependencyManagement {
         dependency("log4j:log4j:1.2.17")
 
         // Project related dependencies
-        dependency("com.luban:luban-dingtalk:1.0.4-sp2-SNAPSHOT")
+        dependency("com.hp:dingtalk-module:1.0.1-sp2-SNAPSHOT")
         dependency("com.belerweb:pinyin4j:2.5.1")
         dependency("com.alibaba:fastjson:1.2.83")
     }
@@ -96,7 +96,7 @@ dependencyManagement {
 dependencies {
     // Project dependencies
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("com.luban:luban-dingtalk")
+    implementation("com.hp:dingtalk-module")
     implementation("com.belerweb:pinyin4j")
     implementation("com.alibaba:fastjson")
 
