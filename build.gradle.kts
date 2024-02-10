@@ -80,7 +80,7 @@ dependencyManagement {
     }
     // Define a bom.
     imports {
-        mavenBom("com.luban:common-bom:1.0.0-sp2-SNAPSHOT")
+        mavenBom("com.hp:common-bom:1.0.0-sp3.2-SNAPSHOT")
     }
     dependencies {
         // Fix bug
