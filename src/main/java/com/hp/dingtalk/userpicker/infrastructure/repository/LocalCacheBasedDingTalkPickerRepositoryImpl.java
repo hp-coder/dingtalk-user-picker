@@ -5,16 +5,14 @@ import cn.hutool.core.util.StrUtil;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.hp.dingtalk.userpicker.infrastructure.repository.cache.IDingTalkUserPickerCache;
 import com.hp.dingtalk.userpicker.domain.DingTalkPickerNode;
 import com.hp.dingtalk.userpicker.domain.DingTalkPickerNodeSource;
 import com.hp.dingtalk.userpicker.domain.DingTalkPickerNodeType;
+import com.hp.dingtalk.userpicker.infrastructure.repository.cache.IDingTalkUserPickerCache;
 import com.hp.dingtalk.userpicker.infrastructure.repository.source.IDingTalkPickerDatasource;
 import com.hp.dingtalk.userpicker.infrastructure.search.SearchAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 
 import javax.annotation.Nullable;
@@ -52,7 +50,6 @@ public class LocalCacheBasedDingTalkPickerRepositoryImpl implements IDingTalkPic
     }
 
     @Async
-    @EventListener(ApplicationReadyEvent.class)
     @Override
     public void refresh(boolean forceRefresh) {
         final List<DingTalkPickerNode> nodes = Stream.of(DingTalkPickerNodeSource.values())

@@ -1,10 +1,12 @@
 package com.hp.dingtalk.userpicker.infrastructure.event;
 
 import cn.hutool.core.collection.CollUtil;
+import com.hp.dingtalk.component.application.IDingApp;
 import com.hp.dingtalk.component.configuration.DingMiniH5EventCallbackConfig;
 import com.hp.dingtalk.constant.minih5event.DingMiniH5Event;
 import com.hp.dingtalk.service.callback.minih5.AbstractDingMiniH5EventCallbackHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,7 @@ import java.util.Objects;
  */
 @Slf4j
 @Component
+@ConditionalOnBean(value = {DingMiniH5EventCallbackConfig.class, IDingApp.class})
 public class DingTalkMiniH5UserActiveAndLeaveEventCallbackHandler extends
         AbstractDingMiniH5EventCallbackHandler<DingTalkMiniH5ContactEventBody> {
     private final DingMiniH5EventCallbackConfig eventCallbackConfig;

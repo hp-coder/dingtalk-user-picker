@@ -5,16 +5,18 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Chars;
-import com.hp.dingtalk.userpicker.domain.DingTalkPickerNode;
-import com.hp.dingtalk.userpicker.domain.mapper.DingTalkPickerMapper;
-import com.hp.dingtalk.userpicker.infrastructure.pinyin.PinyinConverter;
 import com.hp.common.base.annotations.FieldDesc;
 import com.hp.common.base.annotations.MethodDesc;
+import com.hp.dingtalk.userpicker.context.TranslationHolder;
+import com.hp.dingtalk.userpicker.domain.DingTalkPickerNode;
 import com.hp.dingtalk.userpicker.domain.DingTalkPickerNodeSource;
+import com.hp.dingtalk.userpicker.domain.mapper.DingTalkPickerMapper;
+import com.hp.dingtalk.userpicker.infrastructure.pinyin.PinyinConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -92,6 +94,7 @@ public class LocalCacheBasedSearchAlgorithm implements SearchAlgorithm {
         return false;
     }
 
+
     private List<String> shortToFull(DingTalkPickerNodeSource source, String keyword) {
         final Map<String, Set<String>> sourceMap = Maps.newHashMap();
         if (Objects.isNull(source)) {
@@ -102,39 +105,48 @@ public class LocalCacheBasedSearchAlgorithm implements SearchAlgorithm {
             }
             sourceMap.putAll(shortPinyinKeyedMapping.get(source));
         }
+        // input char array
         final List<Character> chars = Chars.asList(keyword.toCharArray());
-        final List<Set<String>> collect = chars.stream()
+        // translate
+        AtomicInteger index = new AtomicInteger(0);
+        final List<TranslationHolder> translationHolders = chars.stream()
                 .map(c -> {
                     final String lowerCase = c.toString().toLowerCase();
+                    final TranslationHolder translationHolder = new TranslationHolder(lowerCase, index.getAndIncrement());
                     if (pinyinConverter.isChineseLetter(c)) {
                         final List<PinyinConverter.PinyinModel> pinyin = pinyinConverter.chineseToPinyin(c.toString());
-                        return pinyin.stream().map(PinyinConverter.PinyinModel::getName).collect(Collectors.toCollection(Sets::newLinkedHashSet));
+                        final Set<String> translations = pinyin.stream().map(PinyinConverter.PinyinModel::getName).collect(Collectors.toCollection(Sets::newLinkedHashSet));
+                        translationHolder.setTranslations(translations);
+                        return translationHolder;
                     } else if (Character.isAlphabetic(c)) {
-                        final Set<String> defaultSet = Sets.newLinkedHashSet();
-                        defaultSet.add(lowerCase);
-                        return sourceMap.getOrDefault(lowerCase, defaultSet);
+                        final Set<String> translations = sourceMap.getOrDefault(lowerCase, null);
+                        translationHolder.setTranslations(translations);
+                        return translationHolder;
                     } else {
-                        final Set<String> defaultSet = Sets.newLinkedHashSet();
-                        defaultSet.add(lowerCase);
-                        return defaultSet;
+                        return translationHolder;
                     }
                 })
                 .toList();
-        Set<String> set = collect.get(0);
-        for (int i = 1; i < collect.size(); i++) {
-            final Set<String> strings = collect.get(i);
-            Set<String> finalSet = set;
-            set = strings.stream()
-                    .map(s ->
-                            //拼全拼
-                            finalSet.stream().map(ss -> ss + s).collect(Collectors.toCollection(Sets::newLinkedHashSet))
-                    )
-                    .flatMap(Collection::stream)
+        final List<TranslationHolder> optimized = TranslationHolder.Optimizer.optimize(translationHolders);
+        log.info("prints out translation starts \n");
+        optimized.forEach(System.out::println);
+        log.info("prints out translation ends \n");
+
+        Set<String> _1st = optimized.get(0).getTranslations();
+
+        for (int i = 1; i < optimized.size(); i++) {
+            final Set<String> translations = optimized.get(i).getTranslations();
+            _1st = _1st.stream()
+                    .flatMap(s1 -> translations.stream().map(s2 -> s1 + s2))
                     .collect(Collectors.toSet());
         }
-        set.add(keyword);
-        return Lists.newArrayList(set);
+        _1st.add(keyword);
+        log.info("expanded translations: \n");
+        _1st.forEach(System.out::println);
+        log.info("expanded translations: \n");
+        return Lists.newArrayList(_1st);
     }
+
 
     private void buildLocalCache(List<DingTalkPickerNode> nodes) {
         if (CollUtil.isEmpty(nodes)) {
