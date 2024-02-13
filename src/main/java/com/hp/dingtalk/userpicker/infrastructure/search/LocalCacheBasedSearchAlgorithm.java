@@ -128,10 +128,6 @@ public class LocalCacheBasedSearchAlgorithm implements SearchAlgorithm {
                 })
                 .toList();
         final List<TranslationHolder> optimized = TranslationHolder.Optimizer.optimize(translationHolders);
-        log.info("prints out translation starts \n");
-        optimized.forEach(System.out::println);
-        log.info("prints out translation ends \n");
-
         Set<String> _1st = optimized.get(0).getTranslations();
 
         for (int i = 1; i < optimized.size(); i++) {
@@ -141,9 +137,6 @@ public class LocalCacheBasedSearchAlgorithm implements SearchAlgorithm {
                     .collect(Collectors.toSet());
         }
         _1st.add(keyword);
-        log.info("expanded translations: \n");
-        _1st.forEach(System.out::println);
-        log.info("expanded translations: \n");
         return Lists.newArrayList(_1st);
     }
 
